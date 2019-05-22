@@ -4,10 +4,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.vincent.ssm.bean.Employee;
+import org.vincent.ssm.dto.MVCResponse;
 import org.vincent.ssm.service.EmployeeService;
 
 import java.util.List;
@@ -19,11 +20,15 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @GetMapping("/emps")
-    public String getAllEmps(@RequestParam(value="pn", defaultValue = "1") Integer pn, Model model) {
-        PageHelper.startPage(pn, 5);//How many for each page
+    @ResponseBody
+    public MVCResponse getEmpsWithJson(@RequestParam(value="pn", defaultValue = "1") Integer pn) {
+        PageHelper.startPage(pn, 5);
         List<Employee> employeeList = employeeService.getAll();
-        PageInfo<Employee> page = new PageInfo(employeeList, 10);//How many page to display
-        model.addAttribute("pageInfo", page);
+        PageInfo<Employee> result = new PageInfo(employeeList, 10);
+        return MVCResponse.success().add("pageInfo", result);
+    }
+
+    public String getAllEmps() {
         return "list";
     }
 
