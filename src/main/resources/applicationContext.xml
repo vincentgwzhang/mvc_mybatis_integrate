@@ -1,0 +1,72 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd ">
+
+    <context:component-scan base-package="org.vincent">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <context:property-placeholder location="classpath:dbconfig.properties" />
+
+    <!--Config all the backend-->
+    <bean id="comboPooledDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+        <property name="driverClass" value="${jdbc.driverClass}"></property>
+        <property name="user" value="${jdbc.user}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+    <!--Integrate with MyBatis-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--MyBatis global config-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+        <property name="dataSource" ref="comboPooledDataSource"></property>
+
+        <!--MyBatis Mapper file-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml" ></property>
+    </bean>
+
+    <!--Config scanner-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--Scan all the DAO interface and integrate into Spring MVC container-->
+        <property name="basePackage" value="org.vincent.ssm.dao"></property>
+    </bean>
+
+    <!--Transaction-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+        <property name="dataSource" ref="comboPooledDataSource"></property>
+    </bean>
+
+    <!--Start transaction based -->
+    <aop:config>
+        <!--切入点表达式-->
+        <aop:pointcut id="txPoint" expression="execution(* org.vincent.ssm.service..*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoint" />
+    </aop:config>
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!--所有方法都是事务方法-->
+            <tx:method name="*"/>
+
+            <!--get method-->
+            <tx:method name="get*" read-only="true" />
+        </tx:attributes>
+    </tx:advice>
+
+    <!--配置一个可以执行批量的sqlSession-->
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
+        <constructor-arg name="executorType" value="BATCH" />
+    </bean>
+</beans>
