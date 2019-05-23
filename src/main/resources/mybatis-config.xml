@@ -13,6 +13,8 @@
     
     <plugins>
         <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!--If get the 9999th page of query, but only 2 pages in the result, then will come back to 2-->
+            <property name="reasonable" value="true"/>
         </plugin>
     </plugins>
 </configuration>

@@ -20,7 +20,6 @@
 	<script type="text/javascript" src="${jqueryJS}"></script>
 	<link rel="stylesheet" type="text/css" href="${bootstrapCSS }">
 	<script type="text/javascript" src="${bootstrapJS}"></script>
-	<script type="text/javascript" src="${indexJS}"></script>
 </head>
 <body>
 	<div class="container">
@@ -31,7 +30,7 @@
 		</div>
 		<div class="row">
 			<div class="col-md-4 col-md-offset-8">
-				<button class="btn btn-primary">New</button>
+				<button class="btn btn-primary" id="emp_add_modal_btn">New</button>
 				<button class="btn btn-danger">Delete</button>
 			</div>
 		</div>
@@ -59,5 +58,115 @@
 			<div class="col-md-8" id="page_nav_area"></div>
 		</div>
 	</div>
+
+
+
+
+
+
+
+	<div class="modal fade" id="empAddModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">Add Staff</h4>
+				</div>
+				<div class="modal-body">
+					<form class="form-horizontal">
+						<div class="form-group">
+							<label class="col-sm-2 control-label">empName</label>
+							<div class="col-sm-10">
+								<!--Notice: name="empName", the "empName" map to org.vincent.ssm.bean.Employee.empName -->
+								<input type="text" name="empName" class="form-control" id="empName_add_input" placeholder="empName">
+								<span class="help-block"></span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label">email</label>
+							<div class="col-sm-10">
+								<input type="text" name="email" class="form-control" id="email_add_input" placeholder="email@atguigu.com">
+								<span class="help-block"></span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label">gender</label>
+							<div class="col-sm-10">
+								<label class="radio-inline">
+									<input type="radio" name="gender" id="gender1_add_input" value="M" checked="checked"> Male
+								</label>
+								<label class="radio-inline">
+									<input type="radio" name="gender" id="gender2_add_input" value="F"> Female
+								</label>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label">deptName</label>
+							<div class="col-sm-4">
+								<select class="form-control" name="dId">
+								</select>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="emp_save_btn">Save</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal fade" id="empUpdateModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title">Update staff</h4>
+				</div>
+				<div class="modal-body">
+					<form class="form-horizontal">
+						<div class="form-group">
+							<label class="col-sm-2 control-label">empName</label>
+							<div class="col-sm-10">
+								<p class="form-control-static" id="empName_update_static"></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label">email</label>
+							<div class="col-sm-10">
+								<input type="text" name="email" class="form-control" id="email_update_input" placeholder="email@atguigu.com">
+								<span class="help-block"></span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label">gender</label>
+							<div class="col-sm-10">
+								<label class="radio-inline">
+									<input type="radio" name="gender" id="gender1_update_input" value="M" checked="checked"> Male
+								</label>
+								<label class="radio-inline">
+									<input type="radio" name="gender" id="gender2_update_input" value="F"> Female
+								</label>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-2 control-label">deptName</label>
+							<div class="col-sm-4">
+								<select class="form-control" name="dId">
+								</select>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="emp_update_btn">Update</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="${indexJS}"></script>
 </body>
 </html>

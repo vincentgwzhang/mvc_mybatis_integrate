@@ -13,7 +13,7 @@ public class MVCResponse {
 
     public static MVCResponse success() {
         MVCResponse result = new MVCResponse();
-        result.setCode(100);;
+        result.setCode(100);
         result.setMessage("Success");
         return result;
     }

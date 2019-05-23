@@ -32,7 +32,7 @@ public class MapperTest {
     /**
      * 添加 @Transactional 事务自动回滚
      */
-    @Test
+    @Ignore
     @Transactional
     public void testCRUD() {
         /**
@@ -52,7 +52,7 @@ public class MapperTest {
         employeeMapper.insertSelective(new Employee(null, "Jerry", "M", "jerry@atgiogi.com", developDepartment.getDeptId(), developDepartment));
     }
 
-    @Ignore
+    @Test
     public void testBatch() {
         clearDB();
 
@@ -64,7 +64,7 @@ public class MapperTest {
         Department departmentB = departments.get(1);
 
         EmployeeMapper sessionBatchEmployeeMapper = sqlSession.getMapper(EmployeeMapper.class);
-        for(int index = 0; index < 500; index ++){
+        for(int index = 0; index < 5; index ++){
             String name = UUID.randomUUID().toString().substring(0, 20);
             sessionBatchEmployeeMapper.insertSelective(new Employee(null, name, "M", name + "@atgiogi.com", departmentA.getDeptId(), departmentA));
             sessionBatchEmployeeMapper.insertSelective(new Employee(null, name, "F", name + "@atgiogi.com", departmentB.getDeptId(), departmentB));
