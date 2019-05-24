@@ -1,5 +1,6 @@
 var myContextPath = global_getContextPath();
 var totalRecord = 0;
+var currentPageNum = 0;
 
 $(document).ready(pageInit());
 
@@ -11,8 +12,81 @@ function pageInit() {
 function initComponent() {
     initEmpAddBtn();
     initEmpAddSaveBtn();
+    initEmpUpdateSaveBtn();
     initAddFormTextComponent();
     initAddFormEmailComponent();
+    initUpdateFormEmailComponent();
+    initEmpEditBtn();
+    initEmpDelBtn();
+    initCheckAllBtn();
+    initCheckItemBtn();
+    initBatchDeleteBtn();
+}
+
+function initBatchDeleteBtn() {
+    $("#emp_delete_all").click(function () {
+        var empNames = "";
+        $.each($(".check_item:checked"), function () {
+            empNames += $(this).parents("tr").find("td:eq(2)").text() + ",";
+        })
+        empNames = empNames.substring(0, empNames.length-1);
+        if (confirm("Confirm to delte " + empNames + "?")) {
+            var empIds = "";
+            $.each($(".check_item:checked"), function () {
+                empIds += $(this).parents("tr").find("td:eq(1)").text() + "-";
+            })
+            empIds = empIds.substring(0, empIds.length-1);
+            $.ajax({
+                url: myContextPath + "/emp/" + empIds,
+                type: "delete",
+                success: function (result) {
+                    to_page(currentPageNum);
+                }
+            });
+        }
+    });
+}
+
+function initCheckItemBtn() {
+    $(document).on("click", ".check_item", function () {
+        if ( $(".check_item:checked").length == $(".check_item").length ) {
+            $("#check_all").prop("checked", true);
+        } else {
+            $("#check_all").prop("checked", false);
+        }
+    })
+}
+
+function initCheckAllBtn() {
+    $("#check_all").click(function () {
+        var selected = $("#check_all").prop("checked");
+        $(".check_item").prop("checked", selected);
+    });
+}
+
+function initEmpUpdateSaveBtn() {
+    $("#emp_update_btn").click(function () {
+        if(!validate_edit_form()) {
+            return false;
+        }
+
+        $.ajax({
+            url: myContextPath + "/emp/" + $(this).attr("empID"),
+            type: "PUT",
+            data: $("#empUpdateModal form").serialize(),
+            success: function (result) {
+                if(result.code == 100) {
+                    $("#empUpdateModal").modal("hide");
+                    //navigate to new emp
+                    to_page(currentPageNum);
+                } else {
+                    if(undefined != result.extend.errorFields.email) {
+                        show_Validate_msg("#email_add_input", "has-error", result.extend.errorFields.email);
+                    }
+                }
+            }
+        });
+    });
 }
 
 function initEmpAddSaveBtn() {
@@ -31,10 +105,20 @@ function initEmpAddSaveBtn() {
             type: "post",
             data: $("#empAddModal form").serialize(),
             success: function (result) {
-                totalRecord++;
-                $("#empAddModal").modal("hide");
-                //navigate to new emp
-                to_page(totalRecord);
+                if(result.code == 100) {
+                    totalRecord++;
+                    $("#empAddModal").modal("hide");
+                    //navigate to new emp
+                    to_page(totalRecord);
+                } else {
+                    if(undefined != result.extend.errorFields.email) {
+                        show_Validate_msg("#email_add_input", "has-error", result.extend.errorFields.email);
+                    }
+
+                    if (undefined != result.extend.errorFields.empName) {
+                        show_Validate_msg("#empName_add_input", "has-error", result.extend.errorFields.empName);
+                    }
+                }
             }
         });
     });
@@ -45,8 +129,61 @@ function initEmpAddBtn() {
         showModel("#empAddModal");
         clearForm("#empName_add_input", "#email_add_input");
         emptyForm("#empName_add_input", "#email_add_input");
-        fillSelectOptionWithDeptData("#empAddModal select");
+        fillSelectOptionWithDeptData("#empAddModal select", true);
     });
+}
+
+function getEmp(empID) {
+    $.ajax({
+        url: myContextPath + "/emp/" + empID,
+        type: "get",
+        success: function (result) {
+            var employee = result.extend.employee
+            var empIDResult = employee.empId;
+            var emailResult = employee.email;
+            var empNameResult = employee.empName;
+            var genderResult = employee.gender;
+            var didResult = employee.dId;
+            $("#empName_update_static").text(empNameResult);
+            $("#email_update_input").val(emailResult);
+            $("#empUpdateModal input[name=gender]").val([genderResult]);
+            $("#empUpdateModal select").val([didResult]);
+        }
+    });
+}
+
+function initEmpEditBtn() {
+    $(document).on("click", ".edit_btn", function(){
+        clearEmailSelector("#email_update_input");
+        showModel("#empUpdateModal");
+        fillSelectOptionWithDeptData("#empUpdateModal select", false);
+        getEmp($(this).attr("empID"));
+        $("#emp_update_btn").attr("empID", $(this).attr("empID"));
+    });
+}
+
+function initEmpDelBtn() {
+    $(document).on("click", ".delete_ben", function(){
+        var empID = $(this).attr("empID");
+        var empName = $(this).parents("tr").find("td:eq(2)").text();
+        if(confirm("Confirm to delete " + empName + "?")) {
+            $.ajax({
+                url: myContextPath + "/emp/" + empID,
+                type: "delete",
+                success: function (result) {
+                    to_page(currentPageNum);
+                }
+            });
+        }
+    });
+}
+
+function validate_edit_form() {
+    var validate = true;
+    if(!validateEmail("#email_update_input")) {
+        validate = false;
+    }
+    return validate;
 }
 
 function validate_add_form() {
@@ -99,13 +236,16 @@ function validateEmpNameExist(empNameSelector) {
     clearEmpName(empNameSelector);
     var result = isEmpNameExist(empNameSelector);
     if(!result) {
-        $(empNameSelector).parent().addClass("has-error");
-        $(empNameSelector).next("span").text("emp name exist already");
+        show_Validate_msg(empNameSelector, "has-error", "emp name exist already");
     } else {
-        $(empNameSelector).parent().addClass("has-success");
-        $(empNameSelector).next("span").text("emp name correct");
+        show_Validate_msg(empNameSelector, "has-success", "emp name correct");
     }
     return result;
+}
+
+function show_Validate_msg(fieldSelector, cssClass, message) {
+    $(fieldSelector).parent().addClass(cssClass);
+    $(fieldSelector).next("span").text(message);
 }
 
 function initAddFormEmailComponent() {
@@ -114,16 +254,20 @@ function initAddFormEmailComponent() {
     });
 }
 
+function initUpdateFormEmailComponent() {
+    $("#email_update_input").blur(function () {
+        validateEmail("#email_update_input");
+    });
+}
+
 function validateEmail(emailSelector) {
     clearEmailSelector(emailSelector);
 
     var result = isEmailCorrect(emailSelector);
     if(!result) {
-        $(emailSelector).parent().addClass("has-error");
-        $(emailSelector).next("span").text("Email invalid");
+        show_Validate_msg(emailSelector, "has-error", "Email invalid");
     } else {
-        $(emailSelector).parent().addClass("has-success");
-        $(emailSelector).next("span").text("Email correct");
+        show_Validate_msg(emailSelector, "has-success", "Email correct");
     }
     return result;
 }
@@ -133,11 +277,9 @@ function validateEmpName(empNameSelector) {
 
     var result = isEmpNameCorrect(empNameSelector);
     if(!result) {
-        $(empNameSelector).parent().addClass("has-error");
-        $(empNameSelector).next("span").text("emp name invalid");
+        show_Validate_msg(empNameSelector, "has-error", "emp name invalid");
     } else {
-        $(empNameSelector).parent().addClass("has-success");
-        $(empNameSelector).next("span").text("emp name correct");
+        show_Validate_msg(empNameSelector, "has-success", "emp name correct");
     }
     return result;
 }
@@ -171,22 +313,21 @@ function isEmpNameExist(empNameSelector) {
         async: false,
         success: function (result) {
             if(result.code == 200) {
-                $(empNameSelector).parent().addClass("has-error");
-                $(empNameSelector).next("span").text("emp name exist already");
+                show_Validate_msg(empNameSelector, "has-error", "emp name exist already");
                 validated = false;
             } else {
-                $(empNameSelector).parent().addClass("has-success");
-                $(empNameSelector).next("span").text("emp name correct");
+                show_Validate_msg(empNameSelector, "has-success", "emp name correct");
             }
         }
     });
     return validated;
 }
 
-function fillSelectOptionWithDeptData(selectID) {
+function fillSelectOptionWithDeptData(selectID, isASYNC) {
     $.ajax({
         url: myContextPath + "/depts",
         type: "get",
+        async: isASYNC,
         success: function (result) {
             $(selectID).empty();
             $.each(result.extend.depts, function () {
@@ -210,6 +351,8 @@ function loadData() {
 }
 
 function to_page(pn){
+    currentPageNum = pn;
+    $("#check_all").prop("checked", false);
     $.ajax({
         url: myContextPath + "/emps",
         data:"pn="+pn,
@@ -234,17 +377,21 @@ function build_emps_table(result) {
         var email = item.email;
         var deptName = item.department.deptName;
 
+        var empCheckedTD = $("<td><input type='checkbox' class='check_item' /></td>");
         var empIdTD = $("<td></td>").append(empId);
         var empNameTD = $("<td></td>").append(empName);
         var genderTD = $("<td></td>").append(gender);
         var emailTD = $("<td></td>").append(email);
         var deptNameTD = $("<td></td>").append(deptName);
 
-        var editBtn = $("<button></button>").addClass("btn btn-primary btn-sm").append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append(" Edit");
-        var deltBtn = $("<button></button>").addClass("btn btn-danger btn-sm").append($("<span></span>").addClass("glyphicon glyphicon-trash")).append(" Delete");
+        var editBtn = $("<button></button>").addClass("btn btn-primary btn-sm edit_btn").append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append(" Edit");
+        var deltBtn = $("<button></button>").addClass("btn btn-danger btn-sm delete_ben").append($("<span></span>").addClass("glyphicon glyphicon-trash")).append(" Delete");
         var buttonTD = $("<td></td>").append(editBtn).append("&nbsp;&nbsp;&nbsp;").append(deltBtn);
+        editBtn.attr("empId",empId);
+        deltBtn.attr("empId",empId);
 
         $("<tr></tr>")
+            .append(empCheckedTD)
             .append(empIdTD)
             .append(empNameTD)
             .append(genderTD)
@@ -258,6 +405,7 @@ function build_emps_table(result) {
 function build_page_info(result) {
     $("#page_info_area").empty();
     $("#page_info_area").append("The " + result.extend.pageInfo.pageNum + " Page, " + result.extend.pageInfo.pages + " pages, " + result.extend.pageInfo.total + " Records");
+    currentPageNum = result.extend.pageInfo.pageNum;
 }
 
 function build_page_nav(result){

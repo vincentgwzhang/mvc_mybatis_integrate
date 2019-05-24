@@ -1,12 +1,16 @@
 package org.vincent.ssm.bean;
 
+import javax.validation.constraints.Pattern;
+
 public class Employee {
     private Integer empId;
 
+    @Pattern(regexp = "(^[a-zA-Z0-9_-]{6,16}$)|(^[\\u2E80-\\u9FFF]{2,5})", message = "emp name invalid")
     private String empName;
 
     private String gender;
 
+    @Pattern(regexp = "^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$", message = "Email invalid")
     private String email;
 
     private Integer dId;
