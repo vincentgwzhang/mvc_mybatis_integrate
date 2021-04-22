@@ -19,7 +19,7 @@
         <jackson-databind.version>2.9.9</jackson-databind.version>
         <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
         <hibernate.core.version>5.2.12.Final</hibernate.core.version>
-        <mybatis.version>3.5.1</mybatis.version>
+        <mybatis.version>3.5.6</mybatis.version>
         <mybatis-spring.version>2.0.1</mybatis-spring.version>
         <logback.version>1.2.3</logback.version>
         <slf4j.version>1.7.25</slf4j.version>
